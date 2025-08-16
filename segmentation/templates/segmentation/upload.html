@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image for Segmentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Upload Image for SAM 2 Segmentation</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload and Segment</button>
+    </form>
+</body>
+</html>

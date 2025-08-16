@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Segmentation Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        img { max-width: 500px; display: block; margin: 10px 0; background: #ccc; } /* Gray background to show transparency */
+        .debug { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Segmentation Result</h1>
+    <h3>Original Image</h3>
+    <img src="{{ image_upload.image.url }}" alt="Original Image">
+    <h3>Segmented Image</h3>
+    {% if image_upload.result_image %}
+        <img src="{{ image_upload.result_image.url }}" alt="Segmented Image">
+        <p class="debug">Segmented Image URL: {{ image_upload.result_image.url }}</p>
+    {% else %}
+        <p>No segmented image available</p>
+    {% endif %}
+    <p><a href="{% url 'segment_image' %}">Upload Another Image</a></p>
+</body>
+</html>

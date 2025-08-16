@@ -1,0 +1,6 @@
+django
+torch
+torchvision
+torchaudio
+pillow
+numpy
