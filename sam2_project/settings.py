@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'segmentation.apps.SegmentationConfig',
     'rest_framework',
 ]
+CORS_ALLOWED_ORIGINS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

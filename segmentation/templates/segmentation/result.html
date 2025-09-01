@@ -1,24 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Segmentation Result</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anesthesia Risk Assessment Results</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        img { max-width: 500px; display: block; margin: 10px 0; background: #ccc; } /* Gray background to show transparency */
-        .debug { color: blue; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .segmented-image {
+            background: 
+                linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+                linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 15px 15px;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .analysis-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .safe { background: #28a745; color: white; }
+        .hard { background: #dc3545; color: white; }
+
+        .confidence-bar {
+            width: 100%;
+            height: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 1s ease;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .recommendation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .prob-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .results-grid { grid-template-columns: 1fr; }
+            .metrics { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>Segmentation Result</h1>
-    <h3>Original Image</h3>
-    <img src="{{ image_upload.image.url }}" alt="Original Image">
-    <h3>Segmented Image</h3>
-    {% if image_upload.result_image %}
-        <img src="{{ image_upload.result_image.url }}" alt="Segmented Image">
-        <p class="debug">Segmented Image URL: {{ image_upload.result_image.url }}</p>
-    {% else %}
-        <p>No segmented image available</p>
-    {% endif %}
-    <p><a href="{% url 'segment_image' %}">Upload Another Image</a></p>
+    <div class="container">
+        <div class="header">
+            <h1>Anesthesia Risk Assessment</h1>
+            <p>Patient ID: {{ image_upload.id }} | {{ image_upload.uploaded_at|date:"M d, Y H:i" }}</p>
+        </div>
+
+        <div class="content">
+            <div class="results-grid">
+                <!-- Images -->
+                <div class="image-section">
+                    <h3>Original Image</h3>
+                    <img src="{{ image_upload.image.url }}" alt="Original Image">
+                    
+                    {% if image_upload.result_image %}
+                    <h3 style="margin-top: 20px;">Segmented Facial Region</h3>
+                    <div class="segmented-image">
+                        <img src="{{ image_upload.result_image.url }}" alt="Segmented Image">
+                    </div>
+                    {% else %}
+                    <p style="color: #dc3545;">Segmentation failed</p>
+                    {% endif %}
+                </div>
+
+                <!-- Analysis Results -->
+                <div class="analysis-section">
+                    {% if analysis_result %}
+                    <div class="status-badge {{ analysis_result.prediction|lower }}">
+                        {{ analysis_result.prediction }}
+                    </div>
+
+                    
+                    <p style="text-align: center;">
+                        Confidence: <strong>{{ analysis_result.confidence|floatformat:1|default:0 }}%</strong>
+                    </p>
+
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-value">{{ analysis_result.risk_level|default:"N/A" }}</div>
+                            <div class="metric-label">Risk Level</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">{{ analysis_result.threshold_used|floatformat:3|default:"N/A" }}</div>
+                            <div class="metric-label">Threshold</div>
+                        </div>
+                    </div>
+
+                    {% if analysis_result.probabilities %}
+                    <h4 style="color: #2c3e50; margin: 20px 0 10px 0;">Probability Distribution</h4>
+                    <div class="prob-item">
+                        <span>Safe Intubation</span>
+                        <strong style="color: #28a745;">{{ analysis_result.probabilities.safe|floatformat:1|default:0 }}%</strong>
+                    </div>
+                    <div class="prob-item">
+                        <span>Difficult Intubation</span>
+                        <strong style="color: #dc3545;">{{ analysis_result.probabilities.hard|floatformat:1|default:0 }}%</strong>
+                    </div>
+                    {% endif %}
+
+                    <div class="recommendation">
+                        <h4 style="color: #856404; margin-bottom: 10px;">Clinical Recommendation</h4>
+                        <p style="color: #664d03; margin: 0;">{{ analysis_result.clinical_recommendation|default:"No recommendation available" }}</p>
+                    </div>
+
+                    {% if analysis_result.notes %}
+                    <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <small style="color: #6c757d;">{{ analysis_result.notes }}</small>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div style="text-align: center; color: #6c757d;">
+                        <p>No analysis results available.</p>
+                        <button onclick="window.location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Refresh Page
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'segment_image' %}" class="btn">Analyze Another Image</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
